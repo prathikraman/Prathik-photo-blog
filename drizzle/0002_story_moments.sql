@@ -1,0 +1,3 @@
+ALTER TABLE photos ADD COLUMN story_title TEXT NOT NULL DEFAULT '';
+ALTER TABLE photos ADD COLUMN story_body TEXT NOT NULL DEFAULT '';
+ALTER TABLE photos ADD COLUMN story_alignment TEXT NOT NULL DEFAULT 'right';
