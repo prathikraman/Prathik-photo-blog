@@ -10,6 +10,7 @@ export type AdminPhoto = {
 };
 export type AdminChapter = { id: string; journey_id: string; slug: string; title: string; note: string; position: number; photos: AdminPhoto[] };
 export type AdminJourney = {
+  allow_downloads: number;
   id: string; slug: string; title: string; year: number | null; meta: string; intro: string;
   status: "draft" | "published"; hero_photo_id: string | null; chapters: AdminChapter[];
 };
@@ -28,6 +29,12 @@ export const defaultAboutContent: AboutContent = {
 };
 
 const schemaStatements = [
+  `CREATE TABLE IF NOT EXISTS about_images (
+    slot TEXT PRIMARY KEY CHECK (slot IN ('portrait', 'secondary')),
+    id TEXT NOT NULL UNIQUE, object_key TEXT NOT NULL UNIQUE,
+    mime_type TEXT NOT NULL, width INTEGER NOT NULL, height INTEGER NOT NULL,
+    alt TEXT NOT NULL DEFAULT ''
+  )`,
   `CREATE TABLE IF NOT EXISTS journeys (
     id TEXT PRIMARY KEY, slug TEXT NOT NULL UNIQUE, title TEXT NOT NULL, year INTEGER, meta TEXT NOT NULL DEFAULT '',
     intro TEXT NOT NULL DEFAULT '', status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'published')),
@@ -66,6 +73,9 @@ export function getDb(): D1Database {
 export async function ensureContentSchema(db = getDb()) {
   await db.batch(schemaStatements.map((statement) => db.prepare(statement)));
   const journeyColumns = (await db.prepare("PRAGMA table_info(journeys)").all<{ name: string }>()).results;
+  if (!journeyColumns.some((column) => column.name === "allow_downloads")) {
+    await db.prepare("ALTER TABLE journeys ADD COLUMN allow_downloads INTEGER NOT NULL DEFAULT 1 CHECK (allow_downloads IN (0, 1))").run();
+  }
   if (!journeyColumns.some((column) => column.name === "year")) {
     await db.prepare("ALTER TABLE journeys ADD COLUMN year INTEGER").run();
   }
@@ -91,6 +101,13 @@ export async function getAboutContent(): Promise<AboutContent> {
     await ensureContentSchema(db);
     return await db.prepare("SELECT intro_heading, intro_body, approach_heading, approach_body, gear, instagram_url FROM about_content WHERE id = 'about'").first<AboutContent>() ?? defaultAboutContent;
   } catch { return defaultAboutContent; }
+}
+
+export async function getAboutImages(): Promise<Partial<Record<'portrait' | 'secondary', Photo>>> {
+  const db = getDb();
+  await ensureContentSchema(db);
+  const rows = (await db.prepare("SELECT slot, id, width, height, alt FROM about_images").all<{ slot: 'portrait' | 'secondary'; id: string; width: number; height: number; alt: string }>()).results;
+  return Object.fromEntries(rows.map(({ slot, id, ...photo }) => [slot, { ...photo, src: `/media/about/${id}` }]));
 }
 
 export async function getRandomPublishedPhotos(limit = 2): Promise<Photo[]> {
@@ -151,7 +168,7 @@ function journeyFromRecord(record: AdminJourney | undefined): Journey | null {
   if (!allPhotos.length) return null;
   const hero = allPhotos.find((photo) => photo.id === record.hero_photo_id) ?? allPhotos[0];
   return {
-    slug: record.slug, title: record.title, meta: record.meta, intro: record.intro, hero: toPhoto(hero),
+    slug: record.slug, title: record.title, meta: record.meta, intro: record.intro, hero: toPhoto(hero), allowDownloads: record.allow_downloads !== 0,
     chapters: record.chapters.filter((chapter) => chapter.photos.length).map((chapter) => ({
       id: chapter.slug, title: chapter.title, note: chapter.note, blocks: blocksFromPhotos(chapter.photos),
     })),

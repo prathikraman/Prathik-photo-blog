@@ -4,12 +4,13 @@ import { SiteHeader } from "./components/SiteHeader";
 import { SiteFooter } from "./components/SiteFooter";
 import { JourneyCard, SectionHeading } from "./components/Editorial";
 import { Photo } from "./components/Photo";
-import { listPublishedJourneys } from "./lib/content-db";
+import { listPublishedJourneys, getAboutImages } from "./lib/content-db";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const journeys = await listPublishedJourneys();
+  const aboutImages = await getAboutImages();
   const latest = journeys[0];
   const latestPhotos = latest
     ? [latest.hero, ...latest.chapters.flatMap((chapter) => chapter.blocks.flatMap((block) => "photo" in block ? [block.photo] : block.photos))]
@@ -23,7 +24,7 @@ export default async function Home() {
       <main>
         <section className="home-hero">
           <SiteHeader overlay />
-          <Photo photo={hero} eager />
+          <Photo photo={hero} eager showCaption={false} />
           <div className="hero-wash" />
           <div className="home-hero__copy">
             <p>Prathik Raman</p>
@@ -32,6 +33,8 @@ export default async function Home() {
           </div>
           <a className="explore-link" href="#latest">Explore <span aria-hidden="true">↓</span></a>
         </section>
+
+        {hero.caption && <p className="home-hero-caption section-shell">{hero.caption}</p>}
 
         {latest ? <>
           <section className="latest section-shell" id="latest">
@@ -56,7 +59,7 @@ export default async function Home() {
         </section>
 
         <section className="about-teaser section-shell">
-          <Photo photo={photos.camera} />
+          <Photo photo={aboutImages.portrait ?? photos.camera} />
           <div><p className="eyebrow">Behind the camera · 03</p><h2>I photograph the details that make a place feel lived in.</h2><p>A visual observer drawn to quiet gestures, changing light, and the poetry of ordinary streets.</p><Link className="text-link" href="/about">About me <span aria-hidden="true">→</span></Link></div>
         </section>
       </main>

@@ -23,6 +23,7 @@ export type JourneyChapter = {
 };
 
 export type Journey = {
+  allowDownloads?: boolean;
   slug: string;
   title: string;
   meta: string;

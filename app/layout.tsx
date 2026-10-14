@@ -45,10 +45,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${editorialSerif.variable} antialiased`}
-      >
+    <html lang="en" className={`${geistSans.variable} ${editorialSerif.variable}`}>
+      <body className="antialiased">
         {children}
       </body>
     </html>

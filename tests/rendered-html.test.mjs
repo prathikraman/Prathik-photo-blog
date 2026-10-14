@@ -35,13 +35,14 @@ test("keeps stories inside journeys instead of a separate journal", async () => 
   assert.match(composer, /Convert to Story moment/);
 });
 
-test("uses published travel photographs on the About page", async () => {
+test("uses fixed owner-selected photographs on the About page", async () => {
   const [about, content] = await Promise.all([
     readFile(new URL("../app/about/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/lib/content-db.ts", import.meta.url), "utf8"),
   ]);
-  assert.match(about, /getRandomPublishedPhotos/);
-  assert.match(content, /WHERE j\.status = 'published' ORDER BY RANDOM\(\)/);
+  assert.match(about, /getAboutImages/);
+  assert.doesNotMatch(about, /getRandomPublishedPhotos/);
+  assert.match(content, /CREATE TABLE IF NOT EXISTS about_images/);
 });
 
 test("keeps upload persistence server-backed and owner protected", async () => {

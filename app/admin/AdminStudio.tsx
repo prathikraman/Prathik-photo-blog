@@ -281,6 +281,20 @@ export function AdminStudio({ initialJourneys, ownerName }: { initialJourneys: A
       <section className="admin-workspace">
         <div className="admin-status" role="status"><span className={busy ? "is-busy" : ""} />{message}</div>
         {activeJourney ? <>
+          <label className="admin-download-setting">Photo downloads for this journey
+            <select disabled={busy} value={activeJourney.allow_downloads === 0 ? 'off' : 'on'} onChange={async event => {
+              const allowDownloads = event.target.value === 'on';
+              const id = activeJourney.id;
+              setBusy(true);
+              try {
+                await parseResponse(await fetch(`/api/admin/journeys/${id}/downloads`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ allowDownloads }) }));
+                await refresh(id);
+                setMessage(allowDownloads ? 'Downloads enabled for every photo in this journey.' : 'Downloads disabled for every photo in this journey. Publicly displayed images can still be captured.');
+              } catch (error) { setMessage(error instanceof Error ? error.message : 'Could not save download setting.'); }
+              finally { setBusy(false); }
+            }}><option value="on">Allow downloads</option><option value="off">Disable downloads — entire journey</option></select>
+            <small>Saves immediately. Applies to the cover and every chapter photo; screenshots and browser saving cannot be prevented.</small>
+          </label>
           <header className="admin-journey-header"><div><p>{activeJourney.status} · {activeJourney.year ?? "Year not set"} · /journeys/{activeJourney.slug}</p><h2>{activeJourney.title}</h2><span>{activeJourney.meta}</span></div><div className="admin-journey-actions"><a href={`/admin/preview/${activeJourney.slug}`} target="_blank" rel="noreferrer">Private preview ↗</a><details className="admin-edit" key={activeJourney.id}><summary>Edit journey</summary><form onSubmit={updateJourney}><label>Name<input name="title" required defaultValue={activeJourney.title} /></label><label>Journey year<input name="year" type="number" min="1900" max="2100" required defaultValue={activeJourney.year ?? ""} placeholder="2026" /></label><label>Journey line<input name="meta" defaultValue={activeJourney.meta} /></label><label>Short introduction<textarea name="intro" rows={4} defaultValue={activeJourney.intro} /></label><button disabled={busy}>Save journey</button></form></details><button className="admin-publish" disabled={busy} onClick={changePublishStatus}>{activeJourney.status === "published" ? "Move to draft" : "Publish journey"}</button></div></header>
           <div className="admin-chapters"><nav aria-label="Journey chapters">{activeJourney.chapters.map((chapter) => <button className={chapter.id === activeChapter?.id ? "is-active" : ""} key={chapter.id} onClick={() => setChapterId(chapter.id)}>{chapter.title}<small>{chapter.photos.length}</small></button>)}</nav><div className="admin-chapter-actions">{activeChapter && <details key={activeChapter.id}><summary>Edit chapter</summary><form onSubmit={updateChapter}><label>Name<input name="title" required defaultValue={activeChapter.title} /></label><label>Chapter description<textarea name="note" rows={4} defaultValue={activeChapter.note} /></label><button disabled={busy}>Save chapter</button></form></details>}<details><summary>Add chapter +</summary><form onSubmit={createChapter}><label>Title<input name="title" required /></label><label>Chapter description<textarea name="note" rows={3} /></label><button disabled={busy}>Add chapter</button></form></details></div></div>
           {activeChapter ? <>

@@ -21,5 +21,5 @@ export type R2Bucket = {
   createMultipartUpload(key: string, options?: { httpMetadata?: { contentType?: string }; customMetadata?: Record<string, string> }): Promise<R2MultipartUpload & { uploadId: string }>;
   resumeMultipartUpload(key: string, uploadId: string): R2MultipartUpload;
 };
-export type AppEnv = { DB?: D1Database; PHOTOS?: R2Bucket };
+export type AppEnv = { DB?: D1Database; PHOTOS?: R2Bucket; DEPLOYMENT_MODE?: string };
 export const getPlatformEnv = () => env as unknown as AppEnv;

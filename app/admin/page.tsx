@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireAdminUser } from "../lib/admin-auth";
-import { getAboutContent, listAdminContent } from "../lib/content-db";
+import { getAboutContent, getAboutImages, listAdminContent } from "../lib/content-db";
+import { AboutImages } from './AboutImages';
 import { AboutEditor, AdminStudio } from "./AdminStudio";
 
 export const dynamic = "force-dynamic";
@@ -20,6 +21,7 @@ export default async function AdminPage() {
         <p>Upload original photographs, arrange them into editorial chapters, and publish when the story is ready.</p>
       </section>
       <AboutEditor initialAbout={about} />
+      <AboutImages initialImages={await getAboutImages()} />
       <AdminStudio initialJourneys={journeys} ownerName={user.displayName} />
     </main>
   );

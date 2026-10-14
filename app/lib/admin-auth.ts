@@ -1,10 +1,14 @@
 import { getChatGPTUser, requireChatGPTUser, type ChatGPTUser } from "../chatgpt-auth";
+import { notFound } from "next/navigation";
+import { getPlatformEnv } from "./platform";
 
 export const ADMIN_EMAIL = "prathik.raman@gmail.com";
 const localAdmin: ChatGPTUser = { displayName: "Prathik Raman", email: ADMIN_EMAIL, fullName: "Prathik Raman" };
 const isLocalDevelopment = () => process.env.NODE_ENV !== "production";
 
 export async function requireAdminUser(): Promise<ChatGPTUser> {
+  // A standalone Worker has no trusted hosting identity injector yet.
+  if (getPlatformEnv().DEPLOYMENT_MODE === "public-only") notFound();
   const optionalUser = await getChatGPTUser();
   const user = optionalUser ?? (isLocalDevelopment() ? localAdmin : await requireChatGPTUser("/admin"));
   if (user.email.toLowerCase() !== ADMIN_EMAIL) throw new Error("This account is not authorized to manage the journal.");
@@ -12,6 +16,7 @@ export async function requireAdminUser(): Promise<ChatGPTUser> {
 }
 
 export async function getAdminUserForApi(): Promise<ChatGPTUser | null> {
+  if (getPlatformEnv().DEPLOYMENT_MODE === "public-only") return null;
   const user = (await getChatGPTUser()) ?? (isLocalDevelopment() ? localAdmin : null);
   return user?.email.toLowerCase() === ADMIN_EMAIL ? user : null;
 }

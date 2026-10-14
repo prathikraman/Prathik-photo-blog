@@ -1,5 +1,7 @@
 # vinext-starter
 
+For the first standalone Cloudflare deployment, see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md). Production preparation is public-only until authentication is implemented; local admin behavior is unchanged.
+
 A clean full-stack starter running on
 [vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
 Drizzle support.
