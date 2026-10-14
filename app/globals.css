@@ -61,8 +61,8 @@ img { display: block; width: 100%; height: auto; }
 .journeys-section { padding-bottom: 12rem; }
 .journey-grid { display: grid; gap: 3rem 2rem; grid-template-columns: 1.15fr .85fr; }
 .journey-card { display: block; }
-.journey-card--2 { margin-top: 12rem; }
-.journey-card--3 { grid-column: 1 / 2; margin-left: 18%; width: 65%; }
+.journey-card--2 { margin-top: 0; }
+.journey-card--3 { grid-column: auto; margin-left: 0; width: 100%; }
 .journey-card h3 { font-family: var(--serif); font-size: 2.2rem; font-weight: 400; margin: 1.4rem 0 .25rem; }
 .journey-card p { color: var(--muted); font-size: .75rem; letter-spacing: .08em; margin: 0; }
 .journey-card span { display: inline-block; font-size: .72rem; letter-spacing: .1em; margin-top: 1rem; text-transform: uppercase; }
